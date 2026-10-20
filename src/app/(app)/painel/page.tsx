@@ -120,7 +120,7 @@ function Onboarding({ data }: { data: Dashboard }) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data, loading, reload } = useApi<Dashboard>("/dashboard");
-  const { collect, analyze, collecting, analyzing } = useJobActions(reload);
+  const { collect, collecting } = useJobActions(reload);
 
   if (loading && !data) {
     return (
@@ -187,7 +187,9 @@ export default function DashboardPage() {
                 }
               />
             ) : (
-              data.topJobs.map((job) => <JobCard key={job.id} job={job} compact />)
+              data.topJobs.map((job) => (
+                <JobCard key={job.id} job={job} compact prefilterMinScore={data.ai.prefilterMinScore} />
+              ))
             )}
           </div>
         </Card>
@@ -199,18 +201,8 @@ export default function DashboardPage() {
               <Button onClick={collect} loading={collecting} icon={<Search className="size-4" />} className="w-full">
                 {collecting ? "Buscando vagas..." : "Buscar vagas agora"}
               </Button>
-              <Button
-                variant="secondary"
-                onClick={analyze}
-                loading={analyzing}
-                disabled={data.pending === 0}
-                icon={<Sparkles className="size-4" />}
-                className="w-full"
-              >
-                {analyzing ? "Analisando..." : data.pending ? `Analisar ${data.pending} pendentes` : "Nada para analisar"}
-              </Button>
               <p className="text-xs text-muted">
-                Vagas com pouca compatibilidade são filtradas antes da IA, sem custo.
+                As vagas chegam com a prévia grátis. A análise com IA é feita vaga por vaga, quando você pedir.
               </p>
             </div>
           </Card>

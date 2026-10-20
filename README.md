@@ -1,6 +1,6 @@
 # Job Analyzer · Frontend (interface)
 
-Interface do **Job Analyzer**, uma central de vagas que busca oportunidades, analisa cada uma com IA de acordo com o perfil do usuário e avisa só das que valem a pena.
+Interface do **Job Analyzer**, uma central de vagas que busca oportunidades brasileiras, mostra uma **nota grátis** de compatibilidade com o seu perfil e, **quando você pede**, faz uma análise completa com IA.
 
 Este repositório **só desenha a tela**. Dados, regras e IA ficam no repositório **job-analyzer-backend**. Toda chamada vai para `/api/*`, e o Next repassa para a API.
 
@@ -31,6 +31,21 @@ O navegador fala só com o frontend. O `next.config.ts` repassa `/api/*` para o 
 
 ---
 
+## Telas e funcionalidades
+
+| Tela | O que tem |
+|---|---|
+| **Início** (`painel/`) | Primeiros passos, números da busca, melhores vagas, automação e uso da IA |
+| **Vagas** (`vagas/`) | **Painel de controle** com cartões clicáveis por situação (Todas, Melhores, Novas, Com IA, Salvas, Candidatei, Descartadas), busca, **filtro por empresa** e **paginação** (20 por página). Os filtros ficam na URL |
+| **Detalhe da vaga** (`vagas/[id]/`) | **Prévia grátis** com os matches (habilidades, cargo, senioridade, o que não aceito) e o botão **"Analisar com IA"**, sempre com **confirmação** antes de gastar. Vagas pouco compatíveis pedem uma confirmação mais forte |
+| **Meu perfil** (`perfil/`) | Habilidades, cargos, senioridade, **níveis de vaga que quero ver**, o que não aceito e currículo. Barra "Salvar alterações" quando há mudanças |
+| **Configurações** (`configuracoes/`) | Fontes (palavras-chave, empresas Greenhouse/Lever), automação, nota mínima e uso da IA |
+| **Como funciona** (`como-funciona/`) | Explica o critério da nota e da análise, com os valores atuais |
+
+Fluxo pensado para o usuário decidir: **busca → nota grátis → abre a vaga → vê os matches → se quiser, "Analisar com IA" → confirma**. Não existe análise em lote.
+
+---
+
 ## Estrutura
 
 ```
@@ -45,17 +60,24 @@ src/
 │       ├── vagas/            lista e vagas/[id] (detalhe)
 │       ├── perfil/
 │       ├── configuracoes/
-│       └── como-funciona/    explica o critério da análise
+│       └── como-funciona/
 ├── components/
 │   ├── app-shell.tsx         menu lateral, topo, notificações
 │   ├── auth-provider.tsx     checa o login e redireciona
-│   ├── job-card.tsx · add-job-dialog.tsx · save-bar.tsx ...
+│   ├── job-card.tsx          cartão da vaga (nota da IA ou prévia)
+│   ├── preview-panel.tsx     painel da prévia grátis com os matches
+│   ├── pagination.tsx        paginação da lista
+│   ├── add-job-dialog.tsx · save-bar.tsx · notifications-menu.tsx
+│   ├── use-job-actions.ts    "Buscar vagas" e o aviso com o resultado
+│   ├── use-profile-form.ts   estado do formulário de perfil
 │   └── ui/                   botão, card, campos, etiquetas, anel de nota, modal, avisos
 └── lib/
     ├── api.ts                cliente da API e hook useApi (401 → login)
     ├── types.ts              tipos das respostas da API
     └── format.ts             textos, datas, cores das notas
 ```
+
+**Detalhe técnico:** o modal e a barra de salvar são renderizados com `createPortal` direto no `<body>`. Dentro das páginas (que têm animação com `transform`), um `position: fixed` ficaria preso à página e sairia da tela.
 
 ---
 
@@ -87,3 +109,4 @@ Se a API não estiver em `http://127.0.0.1:4000`, crie um `.env.local` a partir 
 | Nova página | `src/app/(app)/<nome>/page.tsx` + item em `NAV` no `components/app-shell.tsx` |
 | Novo componente visual | `src/components/ui/` |
 | Chamar uma rota nova da API | `api()` ou `useApi()` de `src/lib/api.ts` + tipo em `lib/types.ts` |
+| Mudar quantas vagas por página | `pageSize` na chamada de `/jobs` em `vagas/page.tsx` (o backend aceita de 5 a 100) |

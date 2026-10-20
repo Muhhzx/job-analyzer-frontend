@@ -12,9 +12,31 @@ export type JobListItem = {
   status: JobStatus;
   url?: string;
   created_at?: string;
+  /** Nota grátis por palavras-chave (sempre existe). */
+  preview_score: number | null;
+  /** Nota da IA (só se o usuário pediu a análise). */
   score: number | null;
   verdict: Verdict | null;
   summary: string | null;
+};
+
+/** O que a prévia grátis encontrou na vaga. */
+export type Preview = {
+  score: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  roleMatched: string | null;
+  dealBreakers: string[];
+  seniority: {
+    job: string | null;
+    profile: string | null;
+    gap: number | null;
+    penalty: number;
+    source: "título" | "experiência pedida" | null;
+    evidence: string | null;
+    accepted: boolean | null;
+  };
+  belowCutoff: boolean;
 };
 
 export type Analysis = {
@@ -40,7 +62,10 @@ export type Job = {
   status: JobStatus;
   posted_at: string | null;
   created_at: string;
+  preview: Preview | null;
   analysis: Analysis | null;
+  aiEnabled: boolean;
+  prefilterMinScore: number;
 };
 
 export type Profile = {
@@ -58,6 +83,8 @@ export type Profile = {
   search_keywords: string;
   greenhouse_boards: string;
   lever_boards: string;
+  /** Níveis de vaga que quero ver, ex.: "1,2". Vazio = automático (meu nível e um acima). */
+  accepted_levels: string;
   min_score: number;
   auto_collect_hours: number;
   auto_analyze: boolean;
@@ -70,7 +97,6 @@ export type MonthUsage = { analyses: number; costUsd: number; maxAnalyses: numbe
 
 export type Dashboard = {
   stats: { total: number; analyzed: number; good: number; saved: number; applied: number };
-  pending: number;
   minScore: number;
   topJobs: JobListItem[];
   completion: Completion;
@@ -81,4 +107,18 @@ export type Dashboard = {
 
 export type Notification = { id: number; job_id: number | null; message: string; read: number; created_at: string };
 
-export type JobFilter = "melhores" | "todas" | "pendentes" | "salva" | "candidatado" | "descartada";
+export type JobFilter = "melhores" | "todas" | "nova" | "salva" | "candidatado" | "descartada" | "ia";
+
+/** Resposta da listagem de vagas (paginada). */
+export type JobListResponse = {
+  jobs: JobListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  counts: Record<JobFilter, number>;
+  companies: { name: string; count: number }[];
+  minScore: number;
+  minVisibleScore: number;
+  prefilterMinScore: number;
+};

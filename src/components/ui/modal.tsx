@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export function Modal({
   open,
@@ -27,8 +28,10 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+  // Portal: renderiza direto no <body>. Dentro de uma página com animação (transform),
+  // o "position: fixed" ficaria preso à página e a caixa sairia da tela.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
@@ -48,6 +51,7 @@ export function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

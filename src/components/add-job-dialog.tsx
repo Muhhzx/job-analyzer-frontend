@@ -25,9 +25,8 @@ export function AddJobDialog({ open, onClose }: { open: boolean; onClose: () => 
     e.preventDefault();
     setSaving(true);
     try {
-      const r = await api<{ job: Job; warning?: string }>("/jobs", { method: "POST", body: form });
-      if (r.warning) toast.error("Vaga salva, mas sem análise", r.warning);
-      else toast.success("Vaga analisada", r.job.analysis ? `Compatibilidade: ${r.job.analysis.score}%` : undefined);
+      const r = await api<{ job: Job }>("/jobs", { method: "POST", body: form });
+      toast.success("Vaga adicionada", r.job.preview ? `Prévia grátis: ${r.job.preview.score}` : undefined);
       setForm(EMPTY);
       onClose();
       router.push(`/vagas/${r.job.id}`);

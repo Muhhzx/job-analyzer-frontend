@@ -4,14 +4,26 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "./ui/toast";
 
-type CollectResult = { results: { source: string; found: number; added: number; error?: string }[]; added: number };
-type AnalyzeResult = { done: number; withAi: number; errors: string[]; remaining: number };
+type CollectResult = {
+  results: { source: string; found: number; added: number; warnings: string[]; error?: string }[];
+  /** Vagas novas no total. */
+  added: number;
+  /** Quantas aparecem na tela (nota ≥ minVisibleScore). */
+  visible: number;
+  /** Quantas ficaram escondidas (nota baixa ou nível fora do que você quer ver). */
+  hidden: number;
+  /** Destas, quantas por senioridade. */
+  hiddenByLevel: number;
+  minVisibleScore: number;
+};
 
-/** Ações de "buscar vagas" e "analisar pendentes" com aviso do resultado. */
+/**
+ * Ação de "buscar vagas" com aviso do resultado.
+ * As vagas já chegam com a nota grátis; a análise com IA é feita vaga por vaga, na página da vaga.
+ */
 export function useJobActions(onDone: () => void) {
   const toast = useToast();
   const [collecting, setCollecting] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
 
   const collect = async () => {
     setCollecting(true);
@@ -19,9 +31,30 @@ export function useJobActions(onDone: () => void) {
       const r = await api<CollectResult>("/jobs/collect", { method: "POST" });
       const failed = r.results.filter((x) => x.error);
       const detail = r.results.map((x) => (x.error ? `${x.source}: falhou` : `${x.source}: ${x.added}`)).join(" · ");
-      if (r.added > 0) toast.success(`${r.added} vagas novas encontradas`, detail);
-      else if (failed.length === r.results.length) toast.error("Não foi possível buscar vagas", failed[0]?.error);
-      else toast.info("Nenhuma vaga nova desta vez", detail);
+      const byScore = r.hidden - r.hiddenByLevel;
+      const hiddenParts = [
+        r.hiddenByLevel > 0 && `${r.hiddenByLevel} de nível fora do que você quer ver`,
+        byScore > 0 && `${byScore} com nota abaixo de ${r.minVisibleScore}`,
+      ].filter(Boolean);
+      const hiddenNote = hiddenParts.length ? ` Escondidas: ${hiddenParts.join(", ")}.` : "";
+      if (r.visible > 0) {
+        toast.success(`${r.visible} vagas novas, já com a nota grátis`, `${detail}.${hiddenNote}`);
+      } else if (failed.length === r.results.length) {
+        toast.error("Não foi possível buscar vagas", failed[0]?.error);
+      } else if (r.added > 0) {
+        toast.info("Nenhuma vaga nova com nota suficiente", `${detail}.${hiddenNote}`);
+      } else {
+        toast.info("Nenhuma vaga nova desta vez", `${detail}. As já encontradas antes não se repetem.`);
+      }
+
+      // Avisos (ex.: empresa que não existe no Greenhouse) não impedem a busca, mas você precisa saber.
+      const warnings = r.results.flatMap((x) => x.warnings.map((w) => `${x.source}: ${w}`));
+      if (warnings.length) {
+        toast.error(
+          `${warnings.length} ${warnings.length === 1 ? "item" : "itens"} da sua lista não funcionaram`,
+          warnings.slice(0, 4).join(" · ") + (warnings.length > 4 ? ` · e mais ${warnings.length - 4}` : ""),
+        );
+      }
       onDone();
     } catch (err) {
       toast.error("Não foi possível buscar vagas", (err as Error).message);
@@ -30,23 +63,5 @@ export function useJobActions(onDone: () => void) {
     }
   };
 
-  const analyze = async () => {
-    setAnalyzing(true);
-    try {
-      const r = await api<AnalyzeResult>("/jobs/analyze-pending", { method: "POST" });
-      if (r.errors.length) toast.error(`${r.errors.length} análises falharam`, r.errors[0]);
-      else
-        toast.success(
-          `${r.done} vagas analisadas`,
-          `${r.withAi} com IA · ${r.done - r.withAi} filtradas sem custo${r.remaining ? ` · faltam ${r.remaining}` : ""}`,
-        );
-      onDone();
-    } catch (err) {
-      toast.error("Não foi possível analisar", (err as Error).message);
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  return { collect, analyze, collecting, analyzing };
+  return { collect, collecting };
 }

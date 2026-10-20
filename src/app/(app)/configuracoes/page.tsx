@@ -87,11 +87,15 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-4 p-5">
           <SourceRow
             icon={<Globe />}
-            name="Remotive"
-            description="Vagas remotas do mundo todo. Busca pelas palavras-chave abaixo."
+            name="Gupy · GitHub · Remotive"
+            description="Gupy: empresas brasileiras. GitHub: vagas de tecnologia da comunidade (backend-br, frontendbr). Remotive: remotas do mundo todo. Todas usam as palavras-chave abaixo."
             active={splitList(form.search_keywords).length > 0}
           >
-            <Field label="Palavras-chave" htmlFor="search_keywords" hint="Também filtram as vagas do Greenhouse e do Lever.">
+            <Field
+              label="Palavras-chave"
+              htmlFor="search_keywords"
+              hint="Só as 5 primeiras são usadas na busca: coloque as mais importantes no começo. Também filtram as vagas do Greenhouse e do Lever."
+            >
               <ChipInput
                 id="search_keywords"
                 value={form.search_keywords}

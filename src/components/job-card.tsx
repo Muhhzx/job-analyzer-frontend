@@ -1,4 +1,4 @@
-import { ChevronRight, MapPin } from "lucide-react";
+import { ChevronRight, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { cn, initials, SOURCE_LABEL, STATUS_LABEL, scoreTone, timeAgo, VERDICT_LABEL } from "@/lib/format";
 import type { JobListItem } from "@/lib/types";
@@ -18,7 +18,17 @@ export function CompanyAvatar({ name, className }: { name: string; className?: s
   );
 }
 
-export function JobCard({ job, compact }: { job: JobListItem; compact?: boolean }) {
+export function JobCard({
+  job,
+  compact,
+  prefilterMinScore = 30,
+}: {
+  job: JobListItem;
+  compact?: boolean;
+  /** Nota de corte do pré-filtro: abaixo dela, a vaga é marcada como pouco compatível. */
+  prefilterMinScore?: number;
+}) {
+  const belowCutoff = job.score === null && job.preview_score !== null && job.preview_score < prefilterMinScore;
   return (
     <Link
       href={`/vagas/${job.id}`}
@@ -48,14 +58,20 @@ export function JobCard({ job, compact }: { job: JobListItem; compact?: boolean 
         {!compact && job.summary && <p className="mt-2 line-clamp-2 text-sm text-muted">{job.summary}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <div className="hidden text-right md:block">
+        <div className="hidden flex-col items-end gap-1 md:flex">
           {job.verdict ? (
-            <Badge tone={scoreTone(job.score)}>{VERDICT_LABEL[job.verdict]}</Badge>
+            <Badge tone={scoreTone(job.score)} icon={<Sparkles />}>
+              {VERDICT_LABEL[job.verdict]}
+            </Badge>
           ) : (
-            <Badge>Aguardando análise</Badge>
+            <>
+              <Badge>Prévia grátis</Badge>
+              {belowCutoff && <Badge tone="warning">Pouco compatível</Badge>}
+            </>
           )}
         </div>
-        <ScoreRing score={job.score} />
+        {/* Nota da IA se existir; senão, a prévia grátis (anel mais apagado). */}
+        <ScoreRing score={job.score ?? job.preview_score} preview={job.score === null} />
         <ChevronRight className="hidden size-4 text-muted transition group-hover:translate-x-0.5 sm:block" />
       </div>
     </Link>

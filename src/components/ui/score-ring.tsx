@@ -16,8 +16,21 @@ const TEXT: Record<string, string> = {
   neutral: "text-muted",
 };
 
-/** Anel de compatibilidade 0–100. Sem nota, mostra um traço. */
-export function ScoreRing({ score, size = 48, className }: { score: number | null; size?: number; className?: string }) {
+/**
+ * Anel de compatibilidade 0–100. Sem nota, mostra um traço.
+ * `preview`: nota grátis (palavras-chave), desenhada mais apagada que a nota da IA.
+ */
+export function ScoreRing({
+  score,
+  size = 48,
+  preview,
+  className,
+}: {
+  score: number | null;
+  size?: number;
+  preview?: boolean;
+  className?: string;
+}) {
   const tone = scoreTone(score);
   const stroke = size >= 80 ? 7 : 4.5;
   const r = (size - stroke) / 2;
@@ -28,7 +41,13 @@ export function ScoreRing({ score, size = 48, className }: { score: number | nul
     <div
       className={cn("relative shrink-0", className)}
       style={{ width: size, height: size }}
-      title={score === null ? "Ainda não analisada" : `${score}% de compatibilidade`}
+      title={
+        score === null
+          ? "Ainda sem nota"
+          : preview
+            ? `Prévia grátis: ${score} (palavras-chave)`
+            : `Nota da IA: ${score}`
+      }
     >
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-surface-2" />
@@ -42,7 +61,7 @@ export function ScoreRing({ score, size = 48, className }: { score: number | nul
             strokeLinecap="round"
             strokeDasharray={circ}
             strokeDashoffset={circ * (1 - pct / 100)}
-            className={cn(STROKE[tone], "transition-[stroke-dashoffset] duration-700")}
+            className={cn(STROKE[tone], preview && "opacity-45", "transition-[stroke-dashoffset] duration-700")}
           />
         )}
       </svg>
@@ -50,6 +69,7 @@ export function ScoreRing({ score, size = 48, className }: { score: number | nul
         className={cn(
           "absolute inset-0 flex items-center justify-center font-semibold tabular-nums",
           TEXT[tone],
+          preview && "opacity-75",
           size >= 80 ? "text-2xl" : "text-sm",
         )}
       >

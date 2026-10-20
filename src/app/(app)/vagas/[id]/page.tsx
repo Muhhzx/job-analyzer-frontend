@@ -21,6 +21,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { CompanyAvatar } from "@/components/job-card";
+import { PreviewPanel } from "@/components/preview-panel";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -77,6 +79,7 @@ export default function JobDetailPage() {
   const { data, loading, error, setData } = useApi<{ job: Job }>(`/jobs/${id}`);
   const [busy, setBusy] = useState<string | null>(null);
   const [showDescription, setShowDescription] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (loading && !data) {
     return (
@@ -110,12 +113,14 @@ export default function JobDetailPage() {
     }
   };
 
-  const reanalyze = async () => {
+  // Só roda depois que o usuário confirma no modal.
+  const analyzeWithAi = async () => {
+    setConfirmOpen(false);
     setBusy("analyze");
     try {
       const r = await api<{ job: Job }>(`/jobs/${job.id}/analyze`, { method: "POST" });
       setData(r);
-      toast.success("Análise atualizada", r.job.analysis ? `Nota: ${r.job.analysis.score}` : undefined);
+      toast.success("Análise com IA concluída", r.job.analysis ? `Nota da IA: ${r.job.analysis.score}` : undefined);
     } catch (err) {
       toast.error("Não foi possível analisar", (err as Error).message);
     } finally {
@@ -164,13 +169,13 @@ export default function JobDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-4 rounded-2xl bg-surface-2 p-4 md:w-64">
-            <ScoreRing score={a?.score ?? null} size={84} />
+            <ScoreRing score={a?.score ?? job.preview?.score ?? null} size={84} preview={!a} />
             <div>
-              <p className="text-xs text-muted">Compatibilidade</p>
+              <p className="text-xs text-muted">{a ? "Nota da IA" : "Prévia grátis"}</p>
               {a ? (
                 <p className="font-semibold">{VERDICT_LABEL[a.verdict]}</p>
               ) : (
-                <p className="font-semibold">Ainda não analisada</p>
+                <p className="font-semibold">{job.preview?.belowCutoff ? "Pouco compatível" : "Sem análise de IA"}</p>
               )}
             </div>
           </div>
@@ -193,15 +198,14 @@ export default function JobDetailPage() {
             </Button>
           )}
           <div className="ml-auto flex gap-2">
-            <Button variant="ghost" onClick={reanalyze} loading={busy === "analyze"} icon={<RefreshCw className="size-4" />}>
-              {a ? "Analisar de novo" : "Analisar agora"}
-            </Button>
             <Button variant="ghost" onClick={remove} aria-label="Excluir vaga" title="Excluir vaga">
               <Trash2 className="size-4" />
             </Button>
           </div>
         </div>
       </Card>
+
+      {job.preview && <PreviewPanel preview={job.preview} cutoff={job.prefilterMinScore} />}
 
       {a ? (
         <>
@@ -220,16 +224,26 @@ export default function JobDetailPage() {
             >
               <Sparkles className="size-4.5" />
             </div>
-            <div>
-              <h2 className="font-semibold">Resumo da análise</h2>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-semibold">Análise da IA</h2>
               <p className="mt-1 leading-relaxed text-muted">{a.summary}</p>
-              <p className="mt-3 text-xs text-muted">
-                {a.engine === "palavras-chave" ? "Análise por palavras-chave" : `Analisado por IA (${a.engine})`} ·{" "}
-                {formatDateTime(a.analyzed_at)} ·{" "}
-                <Link href="/como-funciona" className="text-primary hover:underline">
-                  Como essa nota é calculada?
-                </Link>
-              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-muted">
+                  {a.engine} · {formatDateTime(a.analyzed_at)} ·{" "}
+                  <Link href="/como-funciona" className="text-primary hover:underline">
+                    Como essa nota é calculada?
+                  </Link>
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setConfirmOpen(true)}
+                  loading={busy === "analyze"}
+                  icon={<RefreshCw className="size-3.5" />}
+                >
+                  Analisar de novo
+                </Button>
+              </div>
             </div>
           </Card>
 
@@ -249,19 +263,48 @@ export default function JobDetailPage() {
           )}
         </>
       ) : (
-        <Card>
-          <EmptyState
-            icon={<Sparkles />}
-            title="Esta vaga ainda não foi analisada"
-            description="Analise para ver a nota, o que combina com você e o que falta."
-            action={
-              <Button onClick={reanalyze} loading={busy === "analyze"} icon={<Sparkles className="size-4" />}>
-                Analisar agora
-              </Button>
-            }
-          />
+        <Card className="flex flex-col items-start gap-4 border-primary/30 p-5 sm:flex-row sm:items-center sm:p-6">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+            <Sparkles className="size-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold">Quer uma análise completa com IA?</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              A IA lê a vaga inteira e o seu perfil e diz o que combina, o que falta, os pontos de atenção e como se
+              destacar.
+              {!job.aiEnabled && " A IA está desligada: falta a chave no .env do backend."}
+            </p>
+          </div>
+          <Button
+            onClick={() => setConfirmOpen(true)}
+            loading={busy === "analyze"}
+            disabled={!job.aiEnabled}
+            icon={<Sparkles className="size-4" />}
+          >
+            Analisar com IA
+          </Button>
         </Card>
       )}
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={job.preview?.belowCutoff && !a ? "Analisar uma vaga pouco compatível?" : "Analisar esta vaga com IA?"}
+        description={
+          job.preview?.belowCutoff && !a
+            ? `A prévia grátis deu ${job.preview.score}, abaixo do corte de ${job.prefilterMinScore}. A IA pode confirmar que não vale a pena, e a análise conta na sua cota do mês.`
+            : "A análise usa a sua cota de IA do mês (cerca de US$ 0,001 por vaga)."
+        }
+      >
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={analyzeWithAi} icon={<Sparkles className="size-4" />}>
+            {job.preview?.belowCutoff && !a ? "Sim, analisar mesmo assim" : "Sim, analisar"}
+          </Button>
+        </div>
+      </Modal>
 
       <Card>
         <button

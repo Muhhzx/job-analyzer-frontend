@@ -20,10 +20,14 @@ import { cn } from "@/lib/format";
 import type { Dashboard } from "@/lib/types";
 
 const TRIGGERS = [
-  { title: "Analisar pendentes", text: "Botão no Início e em Vagas. Analisa até 10 vagas por clique." },
-  { title: "Analisar de novo", text: "Na página de uma vaga. Pula o pré-filtro, porque foi você que pediu." },
-  { title: "Analisar vaga", text: "Quando você cola uma vaga (LinkedIn etc.). Também pula o pré-filtro." },
-  { title: "Busca automática", text: "Só se a “análise automática” estiver ligada em Configurações." },
+  {
+    title: "“Analisar com IA” numa vaga",
+    text: "Dentro da vaga, sempre com confirmação. Funciona até nas pouco compatíveis, com um aviso a mais.",
+  },
+  {
+    title: "Análise automática (opcional)",
+    text: "Só se você ligar em Configurações, e só nas vagas da busca automática que passaram do corte.",
+  },
 ];
 
 const SCALE = [
@@ -36,6 +40,7 @@ const SCALE = [
 const CRITERIA = [
   "Age como um recrutador técnico experiente e cita requisitos concretos da vaga, sem elogios genéricos.",
   "Dá mais peso aos requisitos obrigatórios do que aos desejáveis.",
+  "Compara a senioridade: vaga um nível acima fica no máximo “em parte”; dois níveis acima (ex.: você Júnior, vaga Sênior) fica “pouco”.",
   "Baixa bastante a nota quando a vaga conflita com o que você não aceita, local, modelo de trabalho ou salário.",
   "Responde em português, de forma curta e direta.",
 ];
@@ -127,7 +132,7 @@ export default function HowItWorksPage() {
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <MousePointerClick className="size-5 text-primary" /> Quando a análise acontece
         </h2>
-        <p className="-mt-2 text-sm text-muted">Só nestes casos. Fora deles, nada é enviado para a IA.</p>
+        <p className="-mt-2 text-sm text-muted">Só nestes dois casos. Fora deles, nada é enviado para a IA.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {TRIGGERS.map((t) => (
             <Card key={t.title} className="p-4">
@@ -143,8 +148,8 @@ export default function HowItWorksPage() {
           <Sparkles className="size-5 text-primary" /> O caminho de cada vaga
         </h2>
         <div className="flex flex-col gap-2">
-          <Step n={1} icon={<Filter />} title="Pré-filtro por palavras-chave" where="No servidor · grátis">
-            <p>Uma nota rápida, só procurando palavras no texto da vaga:</p>
+          <Step n={1} icon={<Filter />} title="Prévia grátis, na hora da busca" where="No servidor · grátis">
+            <p>Toda vaga chega com uma nota rápida, só procurando palavras no texto:</p>
             <ul className="mt-2 flex flex-col gap-1.5">
               <li>
                 <b className="text-text">Habilidades:</b> quantas das suas aparecem na vaga. Vale até 70 pontos (5
@@ -154,19 +159,28 @@ export default function HowItWorksPage() {
                 <b className="text-text">Cargo:</b> +30 se o título bate com um cargo desejado; +10 se não.
               </li>
               <li>
+                <b className="text-text">Senioridade:</b> o nível no título (Estágio, Júnior, Pleno, Sênior, Lead...) é
+                comparado com o seu. Um nível acima: −20. Dois ou mais: −40.
+              </li>
+              <li>
                 <b className="text-text">O que você não aceita:</b> −25 para cada item que aparece na vaga.
               </li>
             </ul>
             <p className="mt-2">
-              Abaixo de <b className="text-primary">{prefilter}</b>, a vaga para aqui e fica com essa nota. Assim você não
-              gasta com vaga que claramente não combina.
+              Dentro da vaga você vê exatamente o que deu match. Abaixo de <b className="text-primary">{prefilter}</b>, ela
+              é marcada como <b className="text-text">pouco compatível</b>: continua disponível, mas nunca é analisada
+              automaticamente.
             </p>
           </Step>
-          <Step n={2} icon={<Gauge />} title="Limite do mês" where="No servidor">
-            Se o limite de análises ou de gasto do mês já foi atingido, a vaga também fica só com a nota por
-            palavras-chave. Tudo volta ao normal no dia 1º.
+          <Step n={2} icon={<MousePointerClick />} title="Você decide" where="Vaga por vaga">
+            Se a vaga parecer interessante, clique em <b className="text-text">“Analisar com IA”</b> e confirme. Nada
+            é enviado para a IA sem essa confirmação.
           </Step>
-          <Step n={3} icon={<BrainCircuit />} title="Análise com IA" where="Claude, nos servidores da Anthropic" last>
+          <Step n={3} icon={<Gauge />} title="Limite do mês" where="No servidor">
+            Se o limite de análises ou de gasto do mês já foi atingido, a IA fica pausada e a vaga continua com a
+            prévia. Tudo volta ao normal no dia 1º.
+          </Step>
+          <Step n={4} icon={<BrainCircuit />} title="Análise com IA" where="Claude, nos servidores da Anthropic" last>
             <p>O servidor envia o seu perfil e a vaga para o Claude, junto com o critério abaixo, e recebe de volta:</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {["Nota 0–100", "Resumo", "O que combina", "O que falta", "Pontos de atenção", "Dicas de candidatura"].map(

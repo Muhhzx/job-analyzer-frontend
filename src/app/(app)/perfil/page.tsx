@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, PartyPopper, Target, UserRound } from "lucide-react";
+import { Check, FileText, PartyPopper, Target, UserRound } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { SaveBar } from "@/components/save-bar";
@@ -12,6 +12,85 @@ import { Field, Input, Textarea } from "@/components/ui/field";
 
 const SKILL_SUGGESTIONS = ["JavaScript", "TypeScript", "React", "Node.js", "Python", "SQL", "Docker", "AWS", "Git", "Inglês"];
 const SENIORITY = ["Estágio", "Júnior", "Pleno", "Sênior", "Especialista", "Liderança"];
+
+/** Níveis de vaga, na mesma ordem (0 a 4) do backend (seniority.ts). */
+const JOB_LEVELS = ["Estágio", "Júnior", "Pleno", "Sênior", "Especialista / Lead"];
+const PROFILE_LEVEL: Record<string, number> = {
+  Estágio: 0,
+  Júnior: 1,
+  Pleno: 2,
+  Sênior: 3,
+  Especialista: 4,
+  Liderança: 4,
+};
+
+/**
+ * Escolha dos níveis de vaga que aparecem na lista.
+ * Sem escolha, o backend usa o automático: o nível do perfil e um acima.
+ */
+function LevelPicker({
+  seniority,
+  value,
+  onChange,
+}: {
+  seniority: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const chosen = value
+    .split(",")
+    .filter((s) => s.trim() !== "")
+    .map(Number);
+  const own = PROFILE_LEVEL[seniority];
+  const automatic = own === undefined ? [] : [own, Math.min(own + 1, 4)].filter((v, i, a) => a.indexOf(v) === i);
+  const isAuto = chosen.length === 0;
+  const active = isAuto ? automatic : chosen;
+
+  const toggle = (level: number) => {
+    const next = active.includes(level) ? active.filter((l) => l !== level) : [...active, level];
+    onChange(next.sort((a, b) => a - b).join(","));
+  };
+
+  return (
+    <Field
+      label="Níveis de vaga que quero ver"
+      hint={
+        own === undefined && isAuto
+          ? "Escolha sua senioridade acima, ou marque os níveis aqui. Sem isso, aparecem vagas de todos os níveis."
+          : isAuto
+            ? "Automático: o seu nível e um acima. Clique para escolher outros. Vagas sem nível no título continuam aparecendo."
+            : "Vagas de outros níveis ficam escondidas. Vagas sem nível no título continuam aparecendo."
+      }
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        {JOB_LEVELS.map((label, level) => {
+          const on = active.includes(level);
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => toggle(level)}
+              aria-pressed={on}
+              className={
+                on
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary-soft px-3.5 py-1.5 text-sm font-medium text-primary"
+                  : "rounded-full border border-dashed border-border px-3.5 py-1.5 text-sm text-muted line-through decoration-muted/40 hover:text-text"
+              }
+            >
+              {on && <Check className="size-3.5" />}
+              {label}
+            </button>
+          );
+        })}
+        {!isAuto && (
+          <button type="button" onClick={() => onChange("")} className="text-xs text-primary hover:underline">
+            Voltar ao automático
+          </button>
+        )}
+      </div>
+    </Field>
+  );
+}
 
 const SECTIONS = [
   { id: "sobre", label: "Sobre você" },
@@ -110,6 +189,11 @@ function ProfileForm() {
                   ))}
                 </div>
               </Field>
+              <LevelPicker
+                seniority={form.seniority}
+                value={form.accepted_levels}
+                onChange={(v) => set("accepted_levels", v)}
+              />
               <Field label="Habilidades" htmlFor="skills" hint="Digite e aperte Enter. Use os nomes como aparecem nas vagas.">
                 <ChipInput
                   id="skills"
