@@ -117,6 +117,10 @@ O `npm run dev` compila cada tela na primeira vez que você a abre, então troca
 
 ---
 
+## Segurança e testes
+
+A explicação de cada proteção e a lista de todos os testes (API e ponta a ponta) ficam no repositório do backend: `SECURITY.md` e `TESTING.md`. No frontend, as proteções são os cabeçalhos de segurança em `next.config.ts` e o cookie de sessão só no mesmo domínio (pelo repasse de `/api`).
+
 ## Personalizando
 
 | Quero... | Onde |
