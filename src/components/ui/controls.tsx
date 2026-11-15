@@ -23,7 +23,7 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
-        checked ? "bg-primary" : "bg-border",
+        checked ? "bg-gold shadow-glow" : "bg-white/10 ring-1 ring-inset ring-white/10",
       )}
     >
       <span
@@ -56,8 +56,8 @@ export function Segmented<T extends string | number>({
           className={cn(
             "rounded-xl border px-3 py-2.5 text-left transition",
             o.value === value
-              ? "border-primary bg-primary-soft ring-4 ring-[var(--ring)]/40"
-              : "border-border bg-surface hover:bg-surface-2",
+              ? "border-primary/60 bg-gradient-to-b from-primary/20 to-primary/5 shadow-glow"
+              : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]",
           )}
         >
           <div className={cn("text-sm font-medium", o.value === value && "text-primary")}>{o.label}</div>
@@ -71,9 +71,9 @@ export function Segmented<T extends string | number>({
 export function ProgressBar({ value, max, danger }: { value: number; max: number; danger?: boolean }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+    <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
       <div
-        className={cn("h-full rounded-full transition-all duration-700", danger || pct >= 90 ? "bg-danger" : "bg-primary")}
+        className={cn("h-full rounded-full transition-all duration-700", danger || pct >= 90 ? "bg-danger" : "bg-gold")}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -81,7 +81,7 @@ export function ProgressBar({ value, max, danger }: { value: number; max: number
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-xl bg-surface-2", className)} />;
+  return <div className={cn("animate-pulse rounded-2xl bg-white/[0.04]", className)} />;
 }
 
 export function EmptyState({
@@ -97,7 +97,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center px-6 py-12 text-center">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary-soft text-primary [&_svg]:size-6">
+      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-b from-primary/25 to-primary/5 text-primary ring-1 ring-inset ring-primary/25 [&_svg]:size-6">
         {icon}
       </div>
       <h3 className="font-semibold">{title}</h3>

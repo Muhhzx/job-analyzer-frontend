@@ -49,6 +49,19 @@ export type Analysis = {
   application_tips: string;
   engine: string;
   analyzed_at: string;
+  /** Faixa salarial da vaga. null em análises feitas antes desse campo existir. */
+  salary_estimate: SalaryEstimate | null;
+};
+
+export type SalaryEstimate = {
+  source: "informado na vaga" | "estimativa";
+  min: number;
+  max: number;
+  currency: "BRL" | "USD" | "EUR";
+  period: "mensal" | "anual" | "por hora";
+  contract: "CLT" | "PJ" | "não informado";
+  basis: string;
+  vs_candidate: "acima da pretensão" | "dentro da pretensão" | "abaixo da pretensão" | "pretensão não informada";
 };
 
 export type Job = {
@@ -64,6 +77,9 @@ export type Job = {
   created_at: string;
   preview: Preview | null;
   analysis: Analysis | null;
+  /** Candidatura no quadro (null se a vaga nunca foi salva ou candidatada). */
+  application: Application | null;
+  applicationEvents: ApplicationEvent[];
   aiEnabled: boolean;
   prefilterMinScore: number;
 };
@@ -122,3 +138,34 @@ export type JobListResponse = {
   minVisibleScore: number;
   prefilterMinScore: number;
 };
+
+/** Etapas do quadro de candidaturas, na ordem das colunas. */
+export type Stage = "salva" | "candidatei" | "teste" | "entrevista" | "proposta" | "encerrada";
+
+/** Dados da candidatura de uma vaga (o que você anota enquanto acompanha o processo). */
+export type Application = {
+  job_id: number;
+  stage: Stage;
+  /** Data da candidatura (AAAA-MM-DD). */
+  applied_at: string | null;
+  resume_used: string;
+  salary_expectation: string;
+  contact: string;
+  notes: string;
+  stage_changed_at: string;
+  updated_at: string;
+};
+
+export type ApplicationEvent = { stage: Stage; created_at: string };
+
+/** Cartão do quadro: candidatura + o essencial da vaga. */
+export type BoardItem = Application & {
+  title: string;
+  company: string;
+  location: string;
+  url: string;
+  score: number | null;
+  analyzed: boolean;
+};
+
+export type BoardResponse = { stages: Stage[]; items: BoardItem[]; resumes: string[] };

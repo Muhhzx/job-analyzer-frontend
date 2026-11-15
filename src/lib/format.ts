@@ -1,4 +1,4 @@
-import type { JobStatus, Verdict } from "./types";
+import type { JobStatus, Stage, Verdict } from "./types";
 
 export function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -27,6 +27,23 @@ export const STATUS_LABEL: Record<JobStatus, string> = {
   candidatado: "Candidatei",
   descartada: "Descartada",
 };
+
+/** Colunas do quadro de candidaturas: nome, explicação curta e cor. */
+export const STAGE_INFO: Record<Stage, { label: string; hint: string; tone: Tone }> = {
+  salva: { label: "Salva", hint: "Quero me candidatar", tone: "neutral" },
+  candidatei: { label: "Candidatei", hint: "Aguardando retorno", tone: "primary" },
+  teste: { label: "Teste", hint: "Teste online ou desafio", tone: "warning" },
+  entrevista: { label: "Entrevista", hint: "RH, técnica ou gestor", tone: "warning" },
+  proposta: { label: "Proposta", hint: "Recebi uma oferta", tone: "success" },
+  encerrada: { label: "Encerrada", hint: "Recusado ou desisti", tone: "danger" },
+};
+
+/** "AAAA-MM-DD" → "12 nov." (data local, sem fuso). */
+export function formatDay(value: string | null | undefined): string {
+  if (!value) return "";
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y!, m! - 1, d!).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+}
 
 export const SOURCE_LABEL: Record<string, string> = {
   remotive: "Remotive",

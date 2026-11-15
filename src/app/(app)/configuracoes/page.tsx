@@ -7,6 +7,7 @@ import { useProfileForm } from "@/components/use-profile-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { ChipInput } from "@/components/ui/chip-input";
 import { ProgressBar, Segmented, Skeleton, Switch } from "@/components/ui/controls";
 import { Field } from "@/components/ui/field";
@@ -73,10 +74,11 @@ export default function SettingsPage() {
 
   return (
     <div className="animate-fade-up mx-auto flex max-w-3xl flex-col gap-6 pb-24">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Configurações</h1>
-        <p className="mt-1 text-muted">Onde buscar vagas, quando buscar e quando te avisar.</p>
-      </div>
+      <PageHeader
+        eyebrow="Preferências"
+        title="Configurações"
+        description="Onde buscar vagas, quando buscar e quando te avisar."
+      />
 
       <Card id="fontes" className="scroll-mt-24">
         <CardHeader

@@ -6,6 +6,12 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run dev"
+    },
+    {
+      "name": "Frontend (modo rápido / produção)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run prod"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/format";
 
 const control =
-  "w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-text placeholder:text-muted/70 outline-none transition focus:border-primary focus:ring-4 focus:ring-[var(--ring)]";
+  "w-full rounded-xl border border-white/10 bg-black/30 px-3.5 text-sm text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] placeholder:text-muted/60 outline-none transition hover:border-white/20 focus:border-primary/70 focus:bg-black/40 focus:ring-4 focus:ring-primary/15";
 
 export function Field({
   label,

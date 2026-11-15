@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleDashed,
   ExternalLink,
+  KanbanSquare,
   Lightbulb,
   MapPin,
   RefreshCw,
@@ -20,13 +21,15 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { ApplicationForm } from "@/components/application-form";
 import { CompanyAvatar } from "@/components/job-card";
 import { PreviewPanel } from "@/components/preview-panel";
+import { SalaryCard } from "@/components/salary-card";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, Skeleton } from "@/components/ui/controls";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { api, useApi } from "@/lib/api";
@@ -205,6 +208,39 @@ export default function JobDetailPage() {
         </div>
       </Card>
 
+      {job.application && job.status !== "descartada" && (
+        <Card>
+          <CardHeader
+            icon={<KanbanSquare />}
+            title="Minha candidatura"
+            description="Etapa, CV usado, pretensão, contato e anotações deste processo."
+            action={
+              <ButtonLink href="/candidaturas" variant="ghost" size="sm">
+                Ver quadro
+              </ButtonLink>
+            }
+          />
+          <div className="p-5">
+            <ApplicationForm
+              key={`${job.application.stage}-${job.application.updated_at}`}
+              jobId={job.id}
+              application={job.application}
+              events={job.applicationEvents}
+              onSaved={({ application, events }) =>
+                setData({
+                  job: {
+                    ...job,
+                    application,
+                    applicationEvents: events,
+                    status: application.stage === "salva" ? "salva" : "candidatado",
+                  },
+                })
+              }
+            />
+          </div>
+        </Card>
+      )}
+
       {job.preview && <PreviewPanel preview={job.preview} cutoff={job.prefilterMinScore} />}
 
       {a ? (
@@ -246,6 +282,8 @@ export default function JobDetailPage() {
               </div>
             </div>
           </Card>
+
+          {a.salary_estimate && <SalaryCard salary={a.salary_estimate} />}
 
           <div className="grid gap-4 md:grid-cols-2">
             <InsightList title="O que combina" items={a.strengths} icon={<CheckCircle2 />} tone="success" />

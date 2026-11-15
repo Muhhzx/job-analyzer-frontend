@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { useApi } from "@/lib/api";
 import { cn } from "@/lib/format";
 import type { Dashboard } from "@/lib/types";
@@ -95,13 +96,11 @@ export default function HowItWorksPage() {
 
   return (
     <div className="animate-fade-up mx-auto flex max-w-3xl flex-col gap-8 pb-12">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Como funciona a análise</h1>
-        <p className="mt-2 leading-relaxed text-muted">
-          Cada vaga ganha uma nota de 0 a 100 dizendo o quanto ela combina com você. Aqui está o caminho que ela percorre
-          e o critério usado.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Ajuda"
+        title="Como funciona a análise"
+        description="Cada vaga ganha uma nota de 0 a 100 dizendo o quanto ela combina com você. Aqui está o caminho que ela percorre e o critério usado."
+      />
 
       {data && (
         <Card className="flex flex-wrap gap-x-8 gap-y-3 p-5 text-sm">

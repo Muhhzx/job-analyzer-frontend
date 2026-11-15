@@ -95,9 +95,25 @@ npm run dev     # http://localhost:3000
 | `npm run dev` | Desenvolvimento, com recarga automática |
 | `npm run build` | Gera o build de produção |
 | `npm start` | Roda o build de produção |
+| `npm run prod` | Gera o build e já roda (modo rápido, para **usar** o sistema) |
 | `npm run lint` · `npm run typecheck` | Checagens |
+| `npm run test:e2e` | Testes de ponta a ponta (Playwright, no Edge do Windows): cadastro, login, logout, isolamento entre duas pessoas e o quadro de candidaturas. Sobem backend e frontend próprios (portas 4120/3120) com banco temporário e IA desligada |
 
 Se a API não estiver em `http://127.0.0.1:4000`, crie um `.env.local` a partir do `.env.example` e ajuste o `API_URL`.
+
+### Desempenho: desenvolvimento x produção
+
+O `npm run dev` compila cada tela na primeira vez que você a abre, então trocar de tela leva de 1 a 2 s. Para **usar** o sistema, rode `npm run prod` ou o compound **"Rodar tudo · modo rápido (produção)"** do workspace. Nesse modo as telas abrem em cerca de 20 ms.
+
+| Medição | `npm run dev` | `npm run prod` |
+|---|---|---|
+| Tela, na primeira visita | 0,7 – 1,9 s | ~23 ms |
+| Tela, nas visitas seguintes | 170 – 400 ms | ~23 ms |
+| API (`/api/...`) | 10 – 20 ms | 10 – 20 ms |
+
+- O `API_URL` entra no build. Se você mudar o `.env.local`, rode o build de novo.
+- O `useApi` (`src/lib/api.ts`) guarda as respostas em cache. Ao voltar para uma tela, os dados aparecem na hora e são atualizados em segundo plano. O cache é limpo no login e no logout, então um usuário nunca vê dados de outro.
+- `NEXT_DIST_DIR` muda a pasta do build. Use para gerar um build de teste sem mexer no `.next` do servidor de desenvolvimento.
 
 ---
 

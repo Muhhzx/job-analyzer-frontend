@@ -36,13 +36,13 @@ export function ChipInput({
   return (
     <div className="flex flex-col gap-2">
       <div
-        className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-xl border border-border bg-surface px-2 py-1.5 transition focus-within:border-primary focus-within:ring-4 focus-within:ring-[var(--ring)]"
+        className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-2 py-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] transition hover:border-white/20 focus-within:border-primary/70 focus-within:ring-4 focus-within:ring-primary/15"
         onClick={() => document.getElementById(id ?? "")?.focus()}
       >
         {chips.map((chip, i) => (
           <span
             key={`${chip}-${i}`}
-            className="inline-flex items-center gap-1 rounded-lg bg-primary-soft py-1 pr-1 pl-2.5 text-xs font-medium text-primary"
+            className="inline-flex items-center gap-1 rounded-lg bg-primary-soft py-1 pr-1 pl-2.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/25"
           >
             {chip}
             <button

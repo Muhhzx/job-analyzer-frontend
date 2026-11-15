@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { SaveBar } from "@/components/save-bar";
 import { useProfileForm } from "@/components/use-profile-form";
 import { Card, CardHeader } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { ChipInput } from "@/components/ui/chip-input";
 import { ProgressBar, Segmented, Skeleton } from "@/components/ui/controls";
 import { Field, Input, Textarea } from "@/components/ui/field";
@@ -113,12 +114,11 @@ function ProfileForm() {
 
   return (
     <div className="animate-fade-up flex flex-col gap-6 pb-24">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meu perfil</h1>
-        <p className="mt-1 text-muted">
-          A IA usa essas informações para dar nota às vagas. Quanto mais completo, melhor a análise.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Você"
+        title="Meu perfil"
+        description="A IA usa essas informações para dar nota às vagas. Quanto mais completo, melhor a análise."
+      />
 
       {params.get("boas-vindas") && (
         <Card className="flex items-start gap-4 border-primary/30 bg-primary-soft/50 p-5">

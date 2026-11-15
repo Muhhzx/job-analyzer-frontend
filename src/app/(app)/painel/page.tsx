@@ -17,7 +17,8 @@ import { useAuth } from "@/components/auth-provider";
 import { JobCard } from "@/components/job-card";
 import { useJobActions } from "@/components/use-job-actions";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader, IconTile } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { EmptyState, ProgressBar, Skeleton } from "@/components/ui/controls";
 import { useApi } from "@/lib/api";
 import { cn, formatDateTime, frequencyLabel } from "@/lib/format";
@@ -30,12 +31,17 @@ function greeting() {
 
 function Stat({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: number; href: string }) {
   return (
-    <Link href={href} className="group rounded-2xl border border-border bg-surface p-4 shadow-card transition hover:border-primary/40">
-      <div className="flex items-center justify-between text-muted [&_svg]:size-4">
-        <span className="text-xs font-medium">{label}</span>
-        {icon}
+    <Link
+      href={href}
+      className="surface-card group flex items-center gap-4 rounded-2xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-pop sm:p-5"
+    >
+      <IconTile className="size-11 rounded-2xl [&_svg]:size-5">{icon}</IconTile>
+      <div className="min-w-0">
+        <div className="font-[family-name:var(--font-jakarta)] text-[26px] leading-none font-bold tabular-nums transition-colors group-hover:text-primary">
+          {value}
+        </div>
+        <div className="mt-1.5 truncate text-xs font-medium text-muted">{label}</div>
       </div>
-      <div className="mt-2 text-2xl font-semibold tabular-nums group-hover:text-primary">{value}</div>
     </Link>
   );
 }
@@ -79,7 +85,7 @@ function Onboarding({ data }: { data: Dashboard }) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-primary-soft/60 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-gradient-to-r from-primary/15 via-primary/5 to-transparent px-5 py-4">
         <div>
           <h2 className="font-semibold">Primeiros passos</h2>
           <p className="text-sm text-muted">
@@ -96,7 +102,7 @@ function Onboarding({ data }: { data: Dashboard }) {
             <span
               className={cn(
                 "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                s.done ? "bg-success text-on-primary" : "border border-border text-muted",
+                s.done ? "bg-gold text-on-primary shadow-glow" : "border border-white/15 text-muted",
               )}
             >
               {s.done ? <Check className="size-4" /> : i + 1}
@@ -141,17 +147,25 @@ export default function DashboardPage() {
   const usageHigh = ai.usage.analyses / ai.usage.maxAnalyses >= 0.9 || ai.usage.costUsd / ai.usage.budgetUsd >= 0.9;
 
   return (
-    <div className="animate-fade-up flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {greeting()}, {user?.name.split(" ")[0]}
-        </h1>
-        <p className="mt-1 text-muted">
-          {stats.good > 0
+    <div className="animate-fade-up flex flex-col gap-7">
+      <PageHeader
+        eyebrow="Painel"
+        title={
+          <>
+            {greeting()}, <span className="text-gold">{user?.name.split(" ")[0]}</span>
+          </>
+        }
+        description={
+          stats.good > 0
             ? `Você tem ${stats.good} ${stats.good === 1 ? "vaga" : "vagas"} com nota ${data.minScore}+ esperando por você.`
-            : "Aqui está o resumo da sua busca."}
-        </p>
-      </div>
+            : "Aqui está o resumo da sua busca."
+        }
+        actions={
+          <Button onClick={collect} loading={collecting} icon={<Search className="size-4" />}>
+            {collecting ? "Buscando..." : "Buscar vagas"}
+          </Button>
+        }
+      />
 
       <Onboarding data={data} />
 

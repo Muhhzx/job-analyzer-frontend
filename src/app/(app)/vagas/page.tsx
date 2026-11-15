@@ -4,6 +4,7 @@ import { Bookmark, Briefcase, Building2, Inbox, Search, Send, Sparkles, Star, Tr
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { JobCard } from "@/components/job-card";
+import { PageHeader } from "@/components/page-header";
 import { Pagination } from "@/components/pagination";
 import { useJobActions } from "@/components/use-job-actions";
 import { Button } from "@/components/ui/button";
@@ -80,21 +81,21 @@ function JobsList() {
   const hasFilters = Boolean(company || debounced || filter !== "todas");
 
   return (
-    <div className="animate-fade-up flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Vagas</h1>
-          <p className="mt-1 text-muted">
-            Cada vaga chega com a prévia grátis. Abra uma para ver os matches e, se quiser, analisar com IA.
-          </p>
-        </div>
-        <Button onClick={collect} loading={collecting} icon={<Search className="size-4" />}>
-          Buscar vagas
-        </Button>
-      </div>
+    <div className="animate-fade-up flex flex-col gap-7">
+      <PageHeader
+        eyebrow="Oportunidades"
+        title="Vagas"
+        description="Cada vaga chega com a prévia grátis. Abra uma para ver os matches e, se quiser, analisar com IA."
+        actions={
+          <Button onClick={collect} loading={collecting} icon={<Search className="size-4" />}>
+            {collecting ? "Buscando..." : "Buscar vagas"}
+          </Button>
+        }
+      />
 
       {/* Painel de controle: clique num cartão para filtrar. */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-7">
+      {/* No celular vira uma faixa que rola para o lado; no computador, uma grade. */}
+      <div className="-mx-4 flex snap-x scroll-px-4 gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-7">
         {STATUS_CARDS.map((card) => {
           const active = filter === card.id;
           return (
@@ -103,17 +104,22 @@ function JobsList() {
               onClick={() => update({ filtro: card.id })}
               aria-pressed={active}
               className={cn(
-                "rounded-2xl border p-3.5 text-left transition",
+                "group relative min-w-[118px] shrink-0 snap-start overflow-hidden rounded-2xl border p-3.5 text-left transition duration-200 sm:min-w-0",
                 active
-                  ? "border-primary bg-primary-soft ring-4 ring-[var(--ring)]/40"
-                  : "border-border bg-surface hover:border-primary/40",
+                  ? "border-primary/50 bg-gradient-to-b from-primary/20 to-primary/[0.03] shadow-glow"
+                  : "surface-card hover:-translate-y-0.5 hover:border-primary/30",
               )}
             >
               <div className={cn("flex items-center gap-1.5 text-xs font-medium [&_svg]:size-3.5", active ? "text-primary" : "text-muted")}>
                 {card.icon}
                 <span className="truncate">{card.label}</span>
               </div>
-              <div className={cn("mt-1.5 text-2xl font-semibold tabular-nums", active ? "text-primary" : card.tone)}>
+              <div
+                className={cn(
+                  "mt-2 font-[family-name:var(--font-jakarta)] text-2xl font-bold tabular-nums",
+                  active ? "text-gold" : card.tone,
+                )}
+              >
                 {data ? data.counts[card.id] : "–"}
               </div>
             </button>
@@ -129,7 +135,7 @@ function JobsList() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por cargo, empresa ou local"
-            className="h-11 w-full rounded-xl border border-border bg-surface pr-10 pl-10 text-sm shadow-card outline-none focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
+            className="h-12 w-full rounded-xl pr-10 pl-10 border border-white/10 bg-black/30 text-sm shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] outline-none transition hover:border-white/20 focus:border-primary/70 focus:ring-4 focus:ring-primary/15"
           />
           {query && (
             <button
@@ -147,7 +153,7 @@ function JobsList() {
             value={company}
             onChange={(e) => update({ empresa: e.target.value || null })}
             aria-label="Filtrar por empresa"
-            className="h-11 w-full appearance-none rounded-xl border border-border bg-surface pr-8 pl-10 text-sm shadow-card outline-none focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
+            className="h-12 w-full appearance-none rounded-xl pr-8 pl-10 border border-white/10 bg-black/30 text-sm shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] outline-none transition hover:border-white/20 focus:border-primary/70 focus:ring-4 focus:ring-primary/15"
           >
             <option value="">Todas as empresas{data ? ` (${data.companies.length})` : ""}</option>
             {/* Mantém a empresa escolhida na lista mesmo se ela não tiver vagas no filtro atual. */}
