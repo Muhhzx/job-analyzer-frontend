@@ -37,6 +37,8 @@ export type Preview = {
     accepted: boolean | null;
   };
   belowCutoff: boolean;
+  /** Motivos dos filtros de bloqueio (vazio = não bloqueada). Prévias antigas podem não ter. */
+  blockedBy?: string[];
 };
 
 export type Analysis = {
@@ -101,6 +103,12 @@ export type Profile = {
   lever_boards: string;
   /** Níveis de vaga que quero ver, ex.: "1,2". Vazio = automático (meu nível e um acima). */
   accepted_levels: string;
+  /** Bloqueios prontos ligados, ex.: "residencia,clearance". */
+  block_presets: string;
+  /** Termos que escondem a vaga, separados por vírgula. */
+  block_terms: string;
+  /** Esconde vagas que pedem este número de anos ou mais (0 = desligado). */
+  block_max_years: number;
   min_score: number;
   auto_collect_hours: number;
   auto_analyze: boolean;
@@ -123,7 +131,10 @@ export type Dashboard = {
 
 export type Notification = { id: number; job_id: number | null; message: string; read: number; created_at: string };
 
-export type JobFilter = "melhores" | "todas" | "nova" | "salva" | "candidatado" | "descartada" | "ia";
+export type JobFilter = "melhores" | "todas" | "nova" | "salva" | "candidatado" | "descartada" | "ia" | "bloqueadas";
+
+/** Bloqueio pronto oferecido pelo backend (blockers.ts). */
+export type BlockPreset = { id: string; label: string; terms: string[] };
 
 /** Resposta da listagem de vagas (paginada). */
 export type JobListResponse = {

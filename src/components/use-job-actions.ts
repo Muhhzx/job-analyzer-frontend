@@ -14,6 +14,8 @@ type CollectResult = {
   hidden: number;
   /** Destas, quantas por senioridade. */
   hiddenByLevel: number;
+  /** Destas, quantas pelos filtros de bloqueio. */
+  hiddenByBlock: number;
   minVisibleScore: number;
 };
 
@@ -31,8 +33,10 @@ export function useJobActions(onDone: () => void) {
       const r = await api<CollectResult>("/jobs/collect", { method: "POST" });
       const failed = r.results.filter((x) => x.error);
       const detail = r.results.map((x) => (x.error ? `${x.source}: falhou` : `${x.source}: ${x.added}`)).join(" · ");
-      const byScore = r.hidden - r.hiddenByLevel;
+      // Uma vaga pode cair em mais de um motivo; o resto é por nota baixa.
+      const byScore = Math.max(0, r.hidden - r.hiddenByLevel - r.hiddenByBlock);
       const hiddenParts = [
+        r.hiddenByBlock > 0 && `${r.hiddenByBlock} pelos seus filtros de bloqueio`,
         r.hiddenByLevel > 0 && `${r.hiddenByLevel} de nível fora do que você quer ver`,
         byScore > 0 && `${byScore} com nota abaixo de ${r.minVisibleScore}`,
       ].filter(Boolean);

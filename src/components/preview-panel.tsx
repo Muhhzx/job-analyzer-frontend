@@ -1,4 +1,5 @@
-import { AlertTriangle, Check, GraduationCap, Target, X } from "lucide-react";
+import { AlertTriangle, Ban, Check, GraduationCap, Target, X } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/format";
 import type { Preview } from "@/lib/types";
 import { Card } from "./ui/card";
@@ -97,6 +98,23 @@ export function PreviewPanel({ preview, cutoff }: { preview: Preview; cutoff: nu
             </span>
           </div>
         </div>
+
+        {preview.blockedBy && preview.blockedBy.length > 0 && (
+          <div className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
+            <Ban className="mt-0.5 size-4 shrink-0" />
+            <div>
+              <b>Escondida pelos seus filtros de bloqueio.</b> Ela só aparece em “Bloqueadas”.
+              <ul className="mt-1 list-disc pl-4">
+                {preview.blockedBy.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+              <Link href="/perfil#bloqueios" className="mt-1 inline-block font-medium underline">
+                Ajustar filtros
+              </Link>
+            </div>
+          </div>
+        )}
 
         {seniority.accepted === false && (
           <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-soft px-3 py-2.5 text-sm text-warning">

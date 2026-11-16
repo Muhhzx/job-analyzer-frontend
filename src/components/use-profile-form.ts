@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api, useApi } from "@/lib/api";
-import type { Completion, Profile } from "@/lib/types";
+import type { BlockPreset, Completion, Profile } from "@/lib/types";
 import { useToast } from "./ui/toast";
 
-type ProfileResponse = { profile: Profile; completion: Completion };
+type ProfileResponse = { profile: Profile; completion: Completion; blockPresets: BlockPreset[] };
 
 /** Estado do formulário de perfil: carrega, acompanha mudanças e salva. */
 export function useProfileForm() {
@@ -45,5 +45,15 @@ export function useProfileForm() {
 
   const reset = () => data && setForm(data.profile);
 
-  return { form, completion: data?.completion, loading, set, save, saving, dirty, reset };
+  return {
+    form,
+    completion: data?.completion,
+    blockPresets: data?.blockPresets ?? [],
+    loading,
+    set,
+    save,
+    saving,
+    dirty,
+    reset,
+  };
 }
