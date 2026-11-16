@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FileText, PartyPopper, Target, UserRound } from "lucide-react";
+import { Ban, Check, FileText, PartyPopper, Target, UserRound } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { SaveBar } from "@/components/save-bar";
@@ -9,7 +9,89 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { ChipInput } from "@/components/ui/chip-input";
 import { ProgressBar, Segmented, Skeleton } from "@/components/ui/controls";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { cn, splitList } from "@/lib/format";
+import type { BlockPreset, Profile } from "@/lib/types";
+
+/**
+ * Filtros de bloqueio: escondem a vaga (diferente do "não aceito", que só tira pontos).
+ * Bloqueios prontos (com os termos que cada um procura), termos próprios e limite de anos.
+ */
+function BlockFilters({
+  form,
+  presets,
+  set,
+}: {
+  form: Profile;
+  presets: BlockPreset[];
+  set: <K extends keyof Profile>(key: K, value: Profile[K]) => void;
+}) {
+  const active = splitList(form.block_presets);
+  const toggle = (id: string) =>
+    set("block_presets", (active.includes(id) ? active.filter((x) => x !== id) : [...active, id]).join(","));
+
+  return (
+    <div className="flex flex-col gap-5 p-5">
+      <div className="flex flex-col gap-2">
+        {presets.map((p) => {
+          const on = active.includes(p.id);
+          return (
+            <label
+              key={p.id}
+              className={cn(
+                "flex cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 transition",
+                on ? "border-primary/60 bg-primary/[0.06]" : "border-white/10 bg-white/[0.03] hover:border-white/20",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={() => toggle(p.id)}
+                className="mt-0.5 size-4 accent-[var(--primary)]"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium">{p.label}</span>
+                <span className="block text-xs text-muted">Procura: {p.terms.slice(0, 6).join(", ")}…</span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
+      <Field
+        label="Esconder vagas que pedem muitos anos de experiência"
+        htmlFor="block_max_years"
+        hint="Vale quando a descrição cita os anos (ex.: “3+ anos de experiência”, “5 years of experience”)."
+      >
+        <Select
+          id="block_max_years"
+          value={form.block_max_years}
+          onChange={(e) => set("block_max_years", Number(e.target.value))}
+        >
+          <option value={0}>Não esconder</option>
+          {[2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>
+              Esconder se pedir {n} anos ou mais
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      <Field
+        label="Outros termos que escondem a vaga"
+        htmlFor="block_terms"
+        hint="Digite e aperte Enter. Ex.: uma cidade onde não pode morar, “PJ”, uma tecnologia que você não aceita de jeito nenhum."
+      >
+        <ChipInput
+          id="block_terms"
+          value={form.block_terms}
+          onChange={(v) => set("block_terms", v)}
+          placeholder="Ex.: Curitiba, PHP..."
+        />
+      </Field>
+    </div>
+  );
+}
 
 const SKILL_SUGGESTIONS = ["JavaScript", "TypeScript", "React", "Node.js", "Python", "SQL", "Docker", "AWS", "Git", "Inglês"];
 const SENIORITY = ["Estágio", "Júnior", "Pleno", "Sênior", "Especialista", "Liderança"];
@@ -101,7 +183,7 @@ const SECTIONS = [
 
 function ProfileForm() {
   const params = useSearchParams();
-  const { form, completion, loading, set, save, saving, dirty, reset } = useProfileForm();
+  const { form, completion, blockPresets, loading, set, save, saving, dirty, reset } = useProfileForm();
 
   if (loading || !form) {
     return (
@@ -275,6 +357,15 @@ function ProfileForm() {
                 />
               </Field>
             </div>
+          </Card>
+
+          <Card id="bloqueios" className="scroll-mt-24">
+            <CardHeader
+              title="Filtros de bloqueio"
+              description="Escondem de vez as vagas impossíveis para você. Elas ficam em “Bloqueadas”, com o motivo, para você conferir."
+              icon={<Ban className="size-4.5" />}
+            />
+            <BlockFilters form={form} presets={blockPresets} set={set} />
           </Card>
 
           <Card id="curriculo" className="scroll-mt-24">

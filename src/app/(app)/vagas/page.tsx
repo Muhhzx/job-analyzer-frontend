@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Briefcase, Building2, Inbox, Search, Send, Sparkles, Star, Trash2, X, Zap } from "lucide-react";
+import { Ban, Bookmark, Briefcase, Building2, Inbox, Search, Send, Sparkles, Star, Trash2, X, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { JobCard } from "@/components/job-card";
@@ -22,6 +22,7 @@ const STATUS_CARDS: { id: JobFilter; label: string; icon: React.ReactNode; tone:
   { id: "salva", label: "Salvas", icon: <Bookmark />, tone: "text-primary" },
   { id: "candidatado", label: "Candidatei", icon: <Send />, tone: "text-success" },
   { id: "descartada", label: "Descartadas", icon: <Trash2 />, tone: "text-muted" },
+  { id: "bloqueadas", label: "Bloqueadas", icon: <Ban />, tone: "text-danger" },
 ];
 
 const EMPTY_TEXT: Record<JobFilter, string> = {
@@ -32,6 +33,7 @@ const EMPTY_TEXT: Record<JobFilter, string> = {
   salva: "Salve vagas para decidir depois. Elas aparecem aqui.",
   candidatado: "Quando marcar que se candidatou a uma vaga, ela aparece aqui.",
   descartada: "Vagas descartadas aparecem aqui.",
+  bloqueadas: "Nenhuma vaga escondida pelos filtros de bloqueio. Configure os filtros em Meu perfil.",
 };
 
 function JobsList() {
